@@ -1,0 +1,34 @@
+<html>
+<head>
+    <title>Podcast Server - Tapir, Akka-Stream and Slick + Postgres demo</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+    <h1>Podcast Server</h1>
+    <p>
+        This server allows to save podcasts (or RSS) content into a database,
+        to update them keeping the new items and
+        to assemble stored items back into the feeds.
+    </p>
+    <p>
+        It should work with podcast/RSS sources.
+        The URLs of feeds are to be initially put into url field of podcast table.
+    </p>
+
+    Available endpoints:
+    <ul>
+        <li><a href="/docs">/docs</a> - automatically generated Swagger-doc</li>
+        <li><a href="/sql">/sql</a>- automatically generated create SQL</li>
+        <li><a href="/podcast/all">/podcast/all</a> - [JSON] API to get all podcasts or RSS</li>
+        <li><a href="/podcast/1">/podcast/<b><i>n</i></b></a> - [JSON] API to get podcast by id</li>
+        <li><a href="/podcast/1/items">/podcast/<b><i>n</i></b>/items</a> - [JSON] API to get items by podcast by id</li>
+        <li><a href="/podcast/1/feed">/podcast/<b><i>n</i></b>/feed</a> - [XML] RSS/podcast feed by podcast id</li>
+        <li><a href="/podcast/1/update">/podcast/<b><i>n</i></b>/update</a> - Do update RSS/podcast by given id</li>
+        <li><a href="/channel/all">/channel/all</a> - [JSON] API to get all saved channels (header of feeds)</li>
+        <li><a href="/channel/1">/channel/<b><i>n</i></b></a> - [JSON] API to get saved channels by id</li>
+        <li><a href="/item/all">/item/all</a> - [JSON] API to get all saved items</li>
+        <li><a href="/item/1">/item/<b><i>n</i></b></a> - [JSON] API to get saved items by id</li>
+    </ul>
+</body>
+</html>
+

@@ -1,0 +1,6 @@
+a
+{
+    float:left;/*fix for buggy browsers*/
+    display:table-column;
+    width:200px;
+}
