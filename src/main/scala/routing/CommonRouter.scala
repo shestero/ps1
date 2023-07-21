@@ -9,9 +9,9 @@ import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.{CodecFormat, endpoint, header, statusCode, streamTextBody}
 
 import java.nio.charset.StandardCharsets
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class CommonRouter extends CommonController with RouterInterface {
+class CommonRouter(implicit ec: ExecutionContext, session: SlickSession) extends CommonController with RouterInterface {
 
   val redirectOutput = statusCode(StatusCode.PermanentRedirect).and(header[String](HeaderNames.Location))
 
@@ -29,13 +29,20 @@ class CommonRouter extends CommonController with RouterInterface {
       .out(streamTextBody(AkkaStreams)(CodecFormat.TextPlain(), Some(StandardCharsets.UTF_8)))
       .serverLogic(logicSQLSchema)
 
+  val catAllEndpoint =
+    endpoint.description("View all categories")
+      .get.in("cat")
+      .out(streamTextBody(AkkaStreams)(CodecFormat.TextHtml(), Some(StandardCharsets.UTF_8)))
+      .serverLogic(logicAllCategories)
+
   val staticEndpoint = staticFilesGetServerEndpoint[Future]("static")("static")
 
   override val endpoints: List[ServerEndpoint[AkkaStreams, Future]] =
-    rootEndpoint :: schemaEndpoint :: staticEndpoint :: Nil
+    rootEndpoint :: schemaEndpoint :: catAllEndpoint :: staticEndpoint :: Nil
 }
 
 object CommonRouter {
-  def apply()(implicit profile: JdbcProfile, session: SlickSession): List[ServerEndpoint[AkkaStreams, Future]] =
-    (new CommonRouter).endpoints
+  def apply()(implicit profile: JdbcProfile, ec: ExecutionContext, session: SlickSession):
+    List[ServerEndpoint[AkkaStreams, Future]] =
+      (new CommonRouter).endpoints
 }

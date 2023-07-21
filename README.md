@@ -6,13 +6,15 @@ It should work with podcast/RSS sources. The URLs of feeds are to be initially p
 Available endpoints:
 
     /docs             - automatically generated Swagger-doc
-    /sql              - automatically generated create SQL
+    /sql              - [text] automatically generated create SQL
     /podcast/all      - [JSON] API to get all podcasts or RSS
     /podcast/n        - [JSON] API to get podcast by id
     /podcast/n/items  - [JSON] API to get items by podcast by id
     /podcast/n/feed   - [XML] RSS/podcast feed by podcast id
-    /podcast/n/update - Do update RSS/podcast by given id
+    /podcast/n/update - [text stream] Update RSS/podcast by given id
+    /podcast/update   - [text stream] Update all RSS/podcasts
     /channel/all      - [JSON] API to get all saved channels (header of feeds)
     /channel/n        - [JSON] API to get saved channels by id
     /item/all         - [JSON] API to get all saved items
     /item/n           - [JSON] API to get saved items by id
+    /cat              = [HTML] Podcasts by channel category (automatic generated catalog)

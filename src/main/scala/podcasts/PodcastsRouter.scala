@@ -7,29 +7,42 @@ import sttp.model.{Header, MediaType}
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir._
 
+import java.nio.charset.StandardCharsets
 import scala.concurrent.{ExecutionContext, Future}
 
 
 class PodcastsRouter(implicit profile: JdbcProfile, session: SlickSession, ec: ExecutionContext) extends PodcastsController {
 
+  val updateAllEndpoint =
+    endpoint.description(s"Update (download) all $prefix")
+      .get
+      .in(prefix / "update")
+      .out(streamTextBody(AkkaStreams)(CodecFormat.TextPlain(), Some(StandardCharsets.UTF_8)))
+      .serverLogic[Future](logicUpdateAll)
+
   val updateEndpoint =
     endpoint.description(s"Update (download) $prefix with given id")
       .get
       .in(prefix / path[Long] / "update")
-      //.out(streamTextBody(AkkaStreams)(CodecFormat.TextPlain(), Some(StandardCharsets.UTF_8)))
       .out(stringBody)
       .serverLogic(logicUpdateById)
 
   val itemsEndpoint =
-    endpoint.description(s"Get items of $prefix with given id")
+    endpoint.description(s"All items of $prefix from given podcast id")
       .get
       .in(prefix / path[Long] / "items")
-      //.out(streamTextBody(AkkaStreams)(CodecFormat.TextPlain(), Some(StandardCharsets.UTF_8)))
       .out(streamBinaryBody(AkkaStreams)(CodecFormat.Json()))
       .serverLogic(logicItemsByPodcastId)
 
+  val channelsEndpoint =
+    endpoint.description(s"All channels of $prefix from given podcast id")
+      .get
+      .in(prefix / path[Long] / "channels")
+      .out(streamBinaryBody(AkkaStreams)(CodecFormat.Json()))
+      .serverLogic(logicChannelsByPodcastId)
+
   val feedEndpoint =
-    endpoint.description(s"Get merged XML feed of a single $prefix")
+    endpoint.description(s"Merged XML feed of a single $prefix")
       .get
       .in(prefix / path[Long] / "feed")
       .out(stringBody)
@@ -37,7 +50,7 @@ class PodcastsRouter(implicit profile: JdbcProfile, session: SlickSession, ec: E
       .serverLogic(logicXMLById)
 
   override val endpoints: List[ServerEndpoint[AkkaStreams, Future]] =
-    getEndpoints :+ updateEndpoint :+ feedEndpoint :+ itemsEndpoint
+    updateAllEndpoint +: getEndpoints :+ updateEndpoint :+ feedEndpoint :+ itemsEndpoint :+ channelsEndpoint
 }
 
 object PodcastsRouter {

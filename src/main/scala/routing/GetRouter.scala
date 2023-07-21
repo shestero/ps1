@@ -6,7 +6,6 @@ import io.circe.Encoder
 import sttp.tapir._
 import sttp.capabilities.akka.AkkaStreams
 
-//import java.nio.charset.StandardCharsets
 import scala.concurrent.Future
 import scala.reflect.runtime.universe.{TypeTag, typeOf}
 import SourceConverters._
@@ -22,10 +21,9 @@ abstract class GetRouter[T : TypeTag](implicit encoder: Encoder[T]) extends Rout
   val logicGetById: Long => Future[Either[Unit, AkkaStreams.BinaryStream]] = get _ andThen toLogicJson[T]
 
   val allEndpoint =
-    endpoint.description(s"Get all $prefix")
+    endpoint.description(s"All $prefix(s)")
       .get
       .in(prefix / "all")
-      //.out(streamBody(AkkaStreams)(schema, CodecFormat.Json(), Some(StandardCharsets.UTF_8)))
       .out(streamBinaryBody(AkkaStreams)(CodecFormat.Json()))
       .serverLogic(logicAll)
 
@@ -33,7 +31,6 @@ abstract class GetRouter[T : TypeTag](implicit encoder: Encoder[T]) extends Rout
     endpoint.description(s"Get $prefix with given id")
       .get
       .in(prefix / path[Long] )
-      //.out(streamTextBody(AkkaStreams)(CodecFormat.TextPlain(), Some(StandardCharsets.UTF_8)))
       .out(streamBinaryBody(AkkaStreams)(CodecFormat.Json()))
       .serverLogic(logicGetById)
 

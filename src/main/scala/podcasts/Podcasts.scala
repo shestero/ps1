@@ -13,3 +13,8 @@ class Podcasts(tag: Tag) extends Table[Podcast](tag, "podcasts") {
 
   def * = (id, url, cntbrk, lastd) <> (Podcast.apply _ tupled, Podcast.unapply)
 }
+
+object Podcasts {
+  val table: TableQuery[Podcasts] = TableQuery[Podcasts]
+  def queryId(id: Long) = table.filter(_.id === id)
+}
