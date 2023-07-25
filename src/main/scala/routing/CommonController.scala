@@ -33,40 +33,24 @@ class CommonController {
       val act: DBIOAction[Seq[String], NoStream, Effect.Read] = for {
         c <- Channels.byCategory
         //i <- Items.byCategory
-        k = c.keySet.filter(_.nonEmpty) //++ i.keySet
-        f <-
-          DBIOAction.sequence(
-            k
-              .map(k => k -> c.getOrElse(k, Set.empty)) // (c.getOrElse(k, Set.empty), i.getOrElse(k, Set.empty)))
-              .toSeq // .toMap
-              .sortBy(_._1)
-              .collect{ case (k, cs) if cs.nonEmpty =>
-                DBIOAction
-                  .sequence(
-                    cs
-                      .map(c => (c.podcastId, c.title))
-                      .toSeq
-                      .sortBy(_._2)
-                      .map { case (podcastId, title) =>
-                        podcastId
-                          .pipe(Podcasts.queryId)
-                          .map(_.url)
-                          .result
-                          .headOption
-                          .map(_.map(url =>
-                            s"""<li>[<a href="/podcast/$podcastId/feed">feed</a>] <a href="$url">$title</a></li>""")
-                          )
-                      }
-                  )
-                  .map(s"<h4>$k (${cs.size}):</h4>" +: "<ol>" +: _.flatMap(_.map("\t" + _)) :+ "</ol>")
+        res = c
+          .toSeq
+          .sortBy(_._1)
+          .collect{ case (k, mp) if k.nonEmpty =>
+            mp
+              .map{ case (podcastId, (c, p)) => (podcastId, c.title, c.topTag("link").getOrElse(p.url)) }
+              .toSeq
+              .sortBy(_._2)
+              .map { case (podcastId, title, link) =>
+                 s"""\t<li>[<a href="/podcast/$podcastId/feed">feed</a>] <a href="$link">$title</a></li>"""
               }
-          )
-          .map(_.flatten)
-      } yield f.map(_ + "\n")
+              .pipe(s"<h4>$k (${mp.size}):</h4>" +: "<ol>" +: _ :+ "</ol>")
+            }
+      } yield res.flatten
 
       session.db
         .run(act)
-        .map(_.iterator.map(ByteString(_)))
+        .map(_.iterator.map(_ + "\n").map(ByteString(_)))
         .map(() => _)
         .map(Source.fromIterator)
         .map(Right[Unit, AkkaStreams.BinaryStream])

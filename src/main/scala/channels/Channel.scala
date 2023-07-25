@@ -10,11 +10,11 @@ import scala.xml.{Elem, XML}
 
   lazy val channel: Elem = XML.loadString(xml)
 
-  def title: String =
-    Option((channel \ "channel" \ "title").text)
+  def topTag(name: String): Option[String] =
+    Option((channel \ "channel" \ name).text)
       .map(_.trim)
       .filter(_.nonEmpty)
-      //.orElse(Option((channel \\ "title").text).map(_.trim).filter(_.nonEmpty))
       .map(_.replaceAll("\\<.*?\\>", ""))
-      .getOrElse("* Untitled *")
+
+  def title: String = topTag("title") getOrElse "* Untitled *"
 }

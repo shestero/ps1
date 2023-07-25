@@ -1,5 +1,6 @@
 package channels
 
+import podcasts.Podcast
 import slick.lifted.Tag
 
 import java.time.OffsetDateTime
@@ -39,11 +40,11 @@ object Channels {
   def getByPodcastIdStream(podcastId: Long) =
     table.filter(_.podcastId===podcastId).sortBy(_.id.desc).result
 
-  def byCategory(implicit ec: ExecutionContext): DBIOAction[Map[String, Set[Channel]], NoStream, Effect.Read] = {
+  def byCategory(implicit ec: ExecutionContext): DBIOAction[Map[String, Map[Long, (Channel, Podcast)]], NoStream, Effect.Read] = {
     table
-      //.join(podcasts.Podcasts.table).on((c, p) => c.podcastId===p.id).groupBy{ case (_, p) => p.id }.
-      .map{ case c => c.categories -> c }
+      .join(podcasts.Podcasts.table).on((c, p) => c.podcastId===p.id) // .groupBy{ case (_, p) => p.id }
+      .map{ case r @ (c, _) => c.categories -> r  }
       .result
-      .map(_.flatMap{ case (c, e) => c.map(_ -> Set(e)) }.groupMapReduce(_._1)(_._2)(_ ++ _))
+      .map(_.flatMap{ case (c, r) => c.map(_ -> r) }.groupMapReduce(_._1){ case (_, r @ (_,p)) => Map(p.id -> r)}(_ ++ _))
   }
 }
